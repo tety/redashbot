@@ -62,7 +62,7 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const queryUrl = `${redashHostAlias}/queries/${queryId}#${visualizationId}`;
     const embedUrl = `${redashHostAlias}/embed/query/${queryId}/visualization/${visualizationId}?api_key=${redashApiKey}`;
 
-    bot.reply(message, `Taking screenshot of ${originalUrl}`);
+    //bot.reply(message, `Taking screenshot of ${originalUrl}`);
     bot.botkit.log(queryUrl);
     bot.botkit.log(embedUrl);
 
