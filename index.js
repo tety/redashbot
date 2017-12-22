@@ -66,7 +66,7 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     bot.api.reactions.add({
       timestamp: message.ts,
       channel: message.channel,
-      name: 'thumbsup',
+      name: 'camera_with_flash',
     }, function(err, res) {
       if (err) {
         bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
@@ -85,7 +85,7 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
         width: 720,
         height: "all"
       },
-      renderDelay: 5000,
+      renderDelay: 2000,
       timeout: 100000
     };
 
