@@ -63,6 +63,15 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const embedUrl = `${redashHostAlias}/embed/query/${queryId}/visualization/${visualizationId}?api_key=${redashApiKey}`;
 
     //bot.reply(message, `Taking screenshot of ${originalUrl}`);
+    bot.api.reactions.add({
+      timestamp: message.ts,
+      channel: message.channel,
+      name: 'thumbsup',
+    }, function(err, res) {
+      if (err) {
+        bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
+      }
+    });
     bot.botkit.log(queryUrl);
     bot.botkit.log(embedUrl);
 
@@ -76,7 +85,7 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
         width: 720,
         height: "all"
       },
-      renderDelay: 2000,
+      renderDelay: 5000,
       timeout: 100000
     };
 
