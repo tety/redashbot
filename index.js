@@ -78,11 +78,11 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const outputFile = tempfile(".png");
     const webshotOptions = {
       screenSize: {
-        width: 720,
+        width: 1024,
         height: 360
       },
       shotSize: {
-        width: 720,
+        width: 1024,
         height: "all"
       },
       renderDelay: 2000,
