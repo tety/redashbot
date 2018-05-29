@@ -86,7 +86,6 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
         const page = await browser.newPage();
         await page.goto(embedUrl);
         await timeout(5000);
-        const outputFile = tempfile(".png");
         await page.screenshot({
             path: outputFile,
             fullPage: true
