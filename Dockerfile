@@ -1,19 +1,15 @@
-FROM node:6.7
+FROM node:latest
 
-ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update
+RUN apt-get install -y libxss1 libappindicator1 libindicator7 libx11-xcb1 libxtst6 libnss3 libasound2 libatk-bridge2.0 libgtk-3-0 fonts-ipafont fonts-ipaexfont
+RUN apt-get clean
+RUN rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
-# Install IPA fonts
-RUN apt-get update && \
-    apt-get install -qqy --no-install-recommends apt-utils locales fonts-ipaexfont-gothic libfreetype6 libfontconfig && \
-    apt-get clean && \
-    rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
+WORKDIR /src
 
-RUN mkdir /opt/redashbot
-WORKDIR /opt/redashbot
-
-ADD package.json /opt/redashbot
+ADD package.json .
 RUN npm install
-ADD . /opt/redashbot
+ADD index.js .
 
 ENTRYPOINT [ "node" ]
 CMD [ "index.js" ]
