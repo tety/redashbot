@@ -6,10 +6,6 @@ const tempfile = require("tempfile");
 const fs = require("fs");
 const request = require("request");
 
-async function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // This configuration can gets overwritten when process.env.SLACK_MESSAGE_EVENTS is given.
 const DEFAULT_SLACK_MESSAGE_EVENTS = "direct_message,direct_mention,mention";
 
@@ -66,30 +62,29 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const queryUrl = `${redashHostAlias}/queries/${queryId}#${visualizationId}`;
     const embedUrl = `${redashHostAlias}/embed/query/${queryId}/visualization/${visualizationId}?api_key=${redashApiKey}`;
 
-    //bot.reply(message, `Taking screenshot of ${originalUrl}`);
-    bot.api.reactions.add({
-      timestamp: message.ts,
-      channel: message.channel,
-      name: 'camera_with_flash',
-    }, function(err, res) {
-      if (err) {
-        bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
-      }
-    });
-    bot.botkit.log(queryUrl);
-    bot.botkit.log(embedUrl);
-
     (async() => {
        const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
        const page = await browser.newPage();
-       await page.goto(embedUrl);
-       await timeout(5000);
+       await page.goto(embedUrl, {waitUntil: 'networkidle0'});
        const outputFile = tempfile(".png");
        await page.screenshot({
            path: outputFile,
            fullPage: true
        });
        browser.close();
+
+       //bot.reply(message, `Taking screenshot of ${originalUrl}`);
+       bot.api.reactions.add({
+         timestamp: message.ts,
+         channel: message.channel,
+         name: 'camera_with_flash',
+       }, function(err, res) {
+         if (err) {
+           bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
+         }
+       });
+       bot.botkit.log(queryUrl);
+       bot.botkit.log(embedUrl);
 
        bot.botkit.log.debug(outputFile);
        bot.botkit.log.debug(Object.keys(message));
