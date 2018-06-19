@@ -45,7 +45,8 @@ const slackBotToken = process.env.SLACK_BOT_TOKEN;
 const slackMessageEvents = process.env.SLACK_MESSAGE_EVENTS || DEFAULT_SLACK_MESSAGE_EVENTS;
 
 const controller = Botkit.slackbot({
-  debug: !!process.env.DEBUG
+  debug: !!process.env.DEBUG,
+  retry: 10
 });
 
 controller.spawn({
