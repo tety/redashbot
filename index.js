@@ -49,9 +49,16 @@ const controller = Botkit.slackbot({
   retry: 10
 });
 
-controller.spawn({
+var botproc = controller.spawn({
   token: slackBotToken
-}).startRTM();
+});
+
+botproc.startRTM(function(err,bot,payload) {
+  if (err) {
+    bot.botkit.log(err);
+    throw new Error('Could not connect to Slack');
+  }
+});
 
 Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
   const redashHostAlias = redashApiKeysPerHost[redashHost]["alias"];
@@ -64,54 +71,59 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const embedUrl = `${redashHostAlias}/embed/query/${queryId}/visualization/${visualizationId}?api_key=${redashApiKey}`;
 
     (async() => {
-       const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
-       const page = await browser.newPage();
-       await page.goto(embedUrl, {waitUntil: 'networkidle0'});
-       const outputFile = tempfile(".png");
-       await page.screenshot({
-           path: outputFile,
-           fullPage: true
-       });
-       browser.close();
+       try {
+         const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+         const page = await browser.newPage();
+         await page.goto(embedUrl, {waitUntil: 'networkidle0'});
+         const outputFile = tempfile(".png");
+         await page.screenshot({
+             path: outputFile,
+             fullPage: true
+         });
+         browser.close();
 
-       //bot.reply(message, `Taking screenshot of ${originalUrl}`);
-       bot.api.reactions.add({
-         timestamp: message.ts,
-         channel: message.channel,
-         name: 'camera_with_flash',
-       }, function(err, res) {
-         if (err) {
-           bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
-         }
-       });
-       bot.botkit.log(queryUrl);
-       bot.botkit.log(embedUrl);
+         //bot.reply(message, `Taking screenshot of ${originalUrl}`);
+         bot.api.reactions.add({
+           timestamp: message.ts,
+           channel: message.channel,
+           name: 'camera_with_flash',
+         }, function(err, res) {
+           if (err) {
+             bot.botkit.log('Failed to add emoji reaction ', JSON.stringify(err));
+           }
+         });
+         bot.botkit.log(queryUrl);
+         bot.botkit.log(embedUrl);
 
-       bot.botkit.log.debug(outputFile);
-       bot.botkit.log.debug(Object.keys(message));
-       bot.botkit.log(message.user + ":" + message.type + ":" + message.channel + ":" + message.text);
+         bot.botkit.log.debug(outputFile);
+         bot.botkit.log.debug(Object.keys(message));
+         bot.botkit.log(message.user + ":" + message.type + ":" + message.channel + ":" + message.text);
     
-       const options = {
-         token: slackBotToken,
-         filename: `query-${queryId}-visualization-${visualizationId}.png`,
-         file: fs.createReadStream(outputFile),
-         channels: message.channel
-       };
+         const options = {
+           token: slackBotToken,
+           filename: `query-${queryId}-visualization-${visualizationId}.png`,
+           file: fs.createReadStream(outputFile),
+           channels: message.channel
+         };
     
-       // bot.api.file.upload cannot upload binary file correctly, so directly call Slack API.
-       request.post({ url: "https://api.slack.com/api/files.upload", formData: options }, (err, resp, body) => {
-         if (err) {
-           const msg = `Something wrong happend in file upload : ${err}`;
-           bot.reply(message, msg);
-           bot.botkit.log.error(msg);
-         } else if (resp.statusCode == 200) {
-           bot.botkit.log("ok");
-         } else {
-           const msg = `Something wrong happend in file upload : status code=${resp.statusCode}`;
-           bot.reply(message, msg);
-           bot.botkit.log.error(msg);
-         }
-       });
+         // bot.api.file.upload cannot upload binary file correctly, so directly call Slack API.
+         request.post({ url: "https://api.slack.com/api/files.upload", formData: options }, (err, resp, body) => {
+           if (err) {
+             const msg = `Something wrong happend in file upload : ${err}`;
+             bot.reply(message, msg);
+             bot.botkit.log.error(msg);
+           } else if (resp.statusCode == 200) {
+             bot.botkit.log("ok");
+           } else {
+             const msg = `Something wrong happend in file upload : status code=${resp.statusCode}`;
+             bot.reply(message, msg);
+             bot.botkit.log.error(msg);
+           }
+         });
+       } catch (e) {
+         bot.botkit.log(e);
+         botproc.destroy();
+       }
     })();
   });
 });
