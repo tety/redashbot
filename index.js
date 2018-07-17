@@ -71,7 +71,6 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     const embedUrl = `${redashHostAlias}/embed/query/${queryId}/visualization/${visualizationId}?api_key=${redashApiKey}`;
 
     (async() => {
-       try {
          const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
          const page = await browser.newPage();
          await page.goto(embedUrl, {waitUntil: 'networkidle0'});
@@ -120,10 +119,6 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
              bot.botkit.log.error(msg);
            }
          });
-       } catch (e) {
-         bot.botkit.log(e);
-         botproc.destroy();
-       }
     })();
   });
 });
