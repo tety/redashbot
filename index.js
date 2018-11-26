@@ -73,6 +73,9 @@ Object.keys(redashApiKeysPerHost).forEach((redashHost) => {
     (async() => {
          const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
          const page = await browser.newPage();
+         if (process.env.REDASH_HTTP_USER && process.env.REDASH_HTTP_PASSWORD) {
+           await page.authenticate({username: process.env.REDASH_HTTP_USER , password: process.env.REDASH_HTTP_PASSWORD})
+         }
          await page.goto(embedUrl, {waitUntil: 'networkidle0'});
          const outputFile = tempfile(".png");
          await page.screenshot({
